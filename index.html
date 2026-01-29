@@ -1,0 +1,12 @@
+<!doctype html><html><meta charset="utf-8"><title>Loader</title>
+<style>
+  body{margin:0;height:100vh;display:grid;place-items:center}
+  .l{position:relative;width:90px;height:30px}
+  .l:before{content:"";position:absolute;left:50%;top:50%;width:28px;height:28px;background:#33f;border-radius:50%;transform:translate(-50%,-50%)}
+  .l i{position:absolute;inset:0;animation:r 1s linear infinite}
+  .l i:before,.l i:after{content:"";position:absolute;top:50%;width:14px;height:14px;background:#33f;border-radius:50%;transform:translateY(-50%)}
+  .l i:before{left:0} .l i:after{right:0}
+  @keyframes r{to{transform:rotate(360deg)}}
+</style>
+<div class="l"><i></i></div>
+</html>
