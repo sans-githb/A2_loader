@@ -1,12 +1,103 @@
-<!doctype html><html><meta charset="utf-8"><title>Loader</title>
-<style>
-  body{margin:0;height:100vh;display:grid;place-items:center}
-  .l{position:relative;width:90px;height:30px}
-  .l:before{content:"";position:absolute;left:50%;top:50%;width:28px;height:28px;background:#33f;border-radius:50%;transform:translate(-50%,-50%)}
-  .l i{position:absolute;inset:0;animation:r 1s linear infinite}
-  .l i:before,.l i:after{content:"";position:absolute;top:50%;width:14px;height:14px;background:#33f;border-radius:50%;transform:translateY(-50%)}
-  .l i:before{left:0} .l i:after{right:0}
-  @keyframes r{to{transform:rotate(360deg)}}
-</style>
-<div class="l"><i></i></div>
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Loader</title>
+  <style>
+    :root{
+      --blue:#2f43ff;
+      --t:2.6s;              /* durasi 1 siklus (dua fase warna ada di dalamnya) */
+      --big:14vmin;          /* diameter lingkaran besar */
+      --sm:5vmin;            /* diameter lingkaran kecil */
+      --dx:4.4vmin;          /* jarak awal kiri/kanan dari pusat */
+      --ix:2.2vmin;          /* masuk ke dalam lingkaran besar */
+      --iy:2.2vmin;          /* offset atas/bawah saat masuk */
+    }
+
+    html,body{height:100%;margin:0}
+    body{background:#fff; overflow:hidden;}
+
+    .loader{
+      position:fixed; inset:0;
+      display:grid; place-items:center;
+      animation:bg var(--t) linear infinite;
+    }
+
+    .wrap{position:relative; width:calc(var(--big) + 2*var(--dx)); height:var(--big);}
+
+    .big,.l,.r{position:absolute; top:50%; left:50%; border-radius:50%;}
+    .big{
+      width:var(--big); height:var(--big);
+      transform:translate(-50%,-50%) scale(1);
+      z-index:1;
+      animation:big var(--t) ease-in-out infinite;
+      background:var(--blue);
+    }
+    .l,.r{
+      width:var(--sm); height:var(--sm);
+      z-index:2; /* layer di atas lingkaran besar */
+      background:var(--blue);
+    }
+    .l{ animation:l var(--t) ease-in-out infinite; }
+    .r{ animation:r var(--t) ease-in-out infinite; }
+
+    /* BACKGROUND: putih -> biru -> putih -> (loop) */
+    @keyframes bg{
+      0%, 49.999%{ background:#fff; }
+      50%, 100%{ background:var(--blue); }
+    }
+
+    /* WARNA lingkaran: fase1 biru, fase2 putih */
+    @keyframes color{
+      0%,49.999%{ background:var(--blue); }
+      50%,100%{ background:#fff; }
+    }
+    .big,.l,.r{ animation-name: inherit; } /* noop for safety */
+
+    /* BIG: normal -> membesar memenuhi layar (saat "gabung") -> reset */
+    @keyframes big{
+      0%{ transform:translate(-50%,-50%) scale(1); background:var(--blue); }
+      34%{ transform:translate(-50%,-50%) scale(1); background:var(--blue); }
+      50%{ transform:translate(-50%,-50%) scale(32); background:var(--blue); }
+      50.001%{ transform:translate(-50%,-50%) scale(1); background:#fff; }
+      84%{ transform:translate(-50%,-50%) scale(1); background:#fff; }
+      100%{ transform:translate(-50%,-50%) scale(32); background:#fff; }
+    }
+
+    /* KIRI: start kiri -> masuk ke kanan + bawah (di dalam lingkaran besar) -> reset & ganti warna */
+    @keyframes l{
+      0%{ transform:translate(calc(-50% - var(--dx)), -50%); background:var(--blue); }
+      34%{ transform:translate(calc(-50% + var(--ix)), calc(-50% + var(--iy))); background:var(--blue); }
+      50%{ transform:translate(calc(-50% + var(--ix)), calc(-50% + var(--iy))); background:var(--blue); }
+      50.001%{ transform:translate(calc(-50% - var(--dx)), -50%); background:#fff; }
+      84%{ transform:translate(calc(-50% + var(--ix)), calc(-50% + var(--iy))); background:#fff; }
+      100%{ transform:translate(calc(-50% + var(--ix)), calc(-50% + var(--iy))); background:#fff; }
+    }
+
+    /* KANAN: start kanan -> masuk ke kiri + atas (di dalam lingkaran besar) */
+    @keyframes r{
+      0%{ transform:translate(calc(-50% + var(--dx)), -50%); background:var(--blue); }
+      34%{ transform:translate(calc(-50% - var(--ix)), calc(-50% - var(--iy))); background:var(--blue); }
+      50%{ transform:translate(calc(-50% - var(--ix)), calc(-50% - var(--iy))); background:var(--blue); }
+      50.001%{ transform:translate(calc(-50% + var(--dx)), -50%); background:#fff; }
+      84%{ transform:translate(calc(-50% - var(--ix)), calc(-50% - var(--iy))); background:#fff; }
+      100%{ transform:translate(calc(-50% - var(--ix)), calc(-50% - var(--iy))); background:#fff; }
+    }
+  </style>
+</head>
+<body>
+  <div class="loader" aria-label="loading">
+    <div class="wrap">
+      <div class="big"></div>
+      <div class="l"></div>
+      <div class="r"></div>
+    </div>
+  </div>
+
+  <script>
+    // (opsional) contoh: hide loader setelah 3 detik
+    // setTimeout(()=>document.querySelector('.loader')?.remove(), 3000);
+  </script>
+</body>
 </html>
