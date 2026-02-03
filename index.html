@@ -1,103 +1,222 @@
 <!doctype html>
 <html lang="id">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Loader</title>
+  <title>Loader Swap Curve + In</title>
   <style>
-    :root{
-      --blue:#2f43ff;
-      --t:2.6s;              /* durasi 1 siklus (dua fase warna ada di dalamnya) */
-      --big:14vmin;          /* diameter lingkaran besar */
-      --sm:5vmin;            /* diameter lingkaran kecil */
-      --dx:4.4vmin;          /* jarak awal kiri/kanan dari pusat */
-      --ix:2.2vmin;          /* masuk ke dalam lingkaran besar */
-      --iy:2.2vmin;          /* offset atas/bawah saat masuk */
+    :root {
+      --c: #2F34FF;
+      --B: 48px;
+      --S: 18px;
+      --G: 62px;
+      --A: 15px;
+      --t: 2.2s;
+      --e: cubic-bezier(.45, 0, .55, 1);
+      --es: cubic-bezier(.2, .8, .2, 1);
     }
 
-    html,body{height:100%;margin:0}
-    body{background:#fff; overflow:hidden;}
-
-    .loader{
-      position:fixed; inset:0;
-      display:grid; place-items:center;
-      animation:bg var(--t) linear infinite;
+    * {
+      box-sizing: border-box
     }
 
-    .wrap{position:relative; width:calc(var(--big) + 2*var(--dx)); height:var(--big);}
-
-    .big,.l,.r{position:absolute; top:50%; left:50%; border-radius:50%;}
-    .big{
-      width:var(--big); height:var(--big);
-      transform:translate(-50%,-50%) scale(1);
-      z-index:1;
-      animation:big var(--t) ease-in-out infinite;
-      background:var(--blue);
-    }
-    .l,.r{
-      width:var(--sm); height:var(--sm);
-      z-index:2; /* layer di atas lingkaran besar */
-      background:var(--blue);
-    }
-    .l{ animation:l var(--t) ease-in-out infinite; }
-    .r{ animation:r var(--t) ease-in-out infinite; }
-
-    /* BACKGROUND: putih -> biru -> putih -> (loop) */
-    @keyframes bg{
-      0%, 49.999%{ background:#fff; }
-      50%, 100%{ background:var(--blue); }
+    body {
+      margin: 0;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      animation: bg calc(var(--t)*2) steps(1, end) infinite;
     }
 
-    /* WARNA lingkaran: fase1 biru, fase2 putih */
-    @keyframes color{
-      0%,49.999%{ background:var(--blue); }
-      50%,100%{ background:#fff; }
-    }
-    .big,.l,.r{ animation-name: inherit; } /* noop for safety */
-
-    /* BIG: normal -> membesar memenuhi layar (saat "gabung") -> reset */
-    @keyframes big{
-      0%{ transform:translate(-50%,-50%) scale(1); background:var(--blue); }
-      34%{ transform:translate(-50%,-50%) scale(1); background:var(--blue); }
-      50%{ transform:translate(-50%,-50%) scale(32); background:var(--blue); }
-      50.001%{ transform:translate(-50%,-50%) scale(1); background:#fff; }
-      84%{ transform:translate(-50%,-50%) scale(1); background:#fff; }
-      100%{ transform:translate(-50%,-50%) scale(32); background:#fff; }
+    .loader {
+      position: relative;
+      width: calc(var(--G)*2 + var(--B));
+      height: var(--B)
     }
 
-    /* KIRI: start kiri -> masuk ke kanan + bawah (di dalam lingkaran besar) -> reset & ganti warna */
-    @keyframes l{
-      0%{ transform:translate(calc(-50% - var(--dx)), -50%); background:var(--blue); }
-      34%{ transform:translate(calc(-50% + var(--ix)), calc(-50% + var(--iy))); background:var(--blue); }
-      50%{ transform:translate(calc(-50% + var(--ix)), calc(-50% + var(--iy))); background:var(--blue); }
-      50.001%{ transform:translate(calc(-50% - var(--dx)), -50%); background:#fff; }
-      84%{ transform:translate(calc(-50% + var(--ix)), calc(-50% + var(--iy))); background:#fff; }
-      100%{ transform:translate(calc(-50% + var(--ix)), calc(-50% + var(--iy))); background:#fff; }
+    .dot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      border-radius: 999px;
+      transform: translate(-50%, -50%);
+      will-change: transform, opacity, background;
     }
 
-    /* KANAN: start kanan -> masuk ke kiri + atas (di dalam lingkaran besar) */
-    @keyframes r{
-      0%{ transform:translate(calc(-50% + var(--dx)), -50%); background:var(--blue); }
-      34%{ transform:translate(calc(-50% - var(--ix)), calc(-50% - var(--iy))); background:var(--blue); }
-      50%{ transform:translate(calc(-50% - var(--ix)), calc(-50% - var(--iy))); background:var(--blue); }
-      50.001%{ transform:translate(calc(-50% + var(--dx)), -50%); background:#fff; }
-      84%{ transform:translate(calc(-50% - var(--ix)), calc(-50% - var(--iy))); background:#fff; }
-      100%{ transform:translate(calc(-50% - var(--ix)), calc(-50% - var(--iy))); background:#fff; }
+    .big {
+      width: var(--B);
+      height: var(--B);
+      z-index: 1;
+      background: var(--c);
+      animation: big var(--t) var(--e) infinite, col calc(var(--t)*2) steps(1, end) infinite;
+    }
+
+    .s {
+      width: var(--S);
+      height: var(--S);
+      z-index: 2;
+      background: var(--c);
+      animation: small var(--t) var(--es) infinite, col calc(var(--t)*2) steps(1, end) infinite;
+    }
+
+    .l {
+      --f: calc(-1*var(--G));
+      --to: var(--G);
+      --b: var(--A);
+      --bb: calc(-1*var(--A));
+      --ix: 0px;
+      --iy: 0px;
+      --iyb: 0px
+    }
+
+    .r {
+      --f: var(--G);
+      --to: calc(-1*var(--G));
+      --b: calc(-1*var(--A));
+      --bb: var(--A);
+      --ix: 0px;
+      --iy: 0px;
+      --iyb: 0px
+    }
+
+    /* dot kecil: geser → melengkung → balik → masuk → hilang → reset */
+    @keyframes small {
+
+      0%,
+      10% {
+        transform: translate(calc(-50% + var(--f)), -50%);
+        opacity: 1
+      }
+
+      10%,
+      25% {
+        transform: translate(calc(-50% + calc(var(--f)*.13)), calc(-50% + var(--b)))
+      }
+
+      25%,
+      40% {
+        transform: translate(calc(-50% + calc(var(--to)*.13)), calc(-50% + var(--b)))
+      }
+
+      40%,
+      48% {
+        transform: translate(calc(-50% + var(--to)), -50%)
+      }
+
+      48%,
+      58% {
+        transform: translate(calc(-50% + calc(var(--to)*.13)), calc(-50% + var(--bb)))
+      }
+
+      58%,
+      70% {
+        transform: translate(calc(-50% + calc(var(--f)*.13)), calc(-50% + var(--bb)))
+      }
+
+      70%,
+      78% {
+        transform: translate(calc(-50% + var(--ix)), calc(-50% + var(--iyb)))
+      }
+
+      78%,
+      84% {
+        opacity: 1
+      }
+
+      84%,
+      92% {
+        transform: translate(calc(-50% + var(--ix)), calc(-50% + var(--iy)));
+        opacity: 0
+      }
+
+      92%,
+      100% {
+        transform: translate(calc(-50% + var(--f)), -50%);
+        opacity: 0
+      }
+    }
+
+    /* dot besar: sedikit “napas” → membesar penuh layar → reset lompat */
+    @keyframes big {
+
+      0%,
+      10% {
+        transform: translate(-50%, -50%) scale(1)
+      }
+
+      10%,
+      78% {
+        transform: translate(-50%, -50%) scale(1.06)
+      }
+
+      78%,
+      84% {
+        transform: translate(-50%, -50%) scale(1)
+      }
+
+      84%,
+      92% {
+        transform: translate(-50%, -50%) scale(35)
+      }
+
+      92% {
+        transform: translate(-50%, -50%) scale(35)
+      }
+
+      92.001%,
+      100% {
+        transform: translate(-50%, -50%) scale(1)
+      }
+    }
+
+    /* background: putih → biru → putih (sinkron big membesar) */
+    @keyframes bg {
+
+      0%,
+      41.9% {
+        background: #fff
+      }
+
+      42%,
+      91.9% {
+        background: var(--c)
+      }
+
+      92%,
+      100% {
+        background: #fff
+      }
+    }
+
+    /* warna dot: biru → putih → biru (sinkron 2 loop) */
+    @keyframes col {
+
+      0%,
+      45.9% {
+        background: var(--c)
+      }
+
+      46%,
+      95.9% {
+        background: #fff
+      }
+
+      96%,
+      100% {
+        background: var(--c)
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="loader" aria-label="loading">
-    <div class="wrap">
-      <div class="big"></div>
-      <div class="l"></div>
-      <div class="r"></div>
-    </div>
+    <i class="dot s l"></i>
+    <i class="dot big"></i>
+    <i class="dot s r"></i>
   </div>
-
-  <script>
-    // (opsional) contoh: hide loader setelah 3 detik
-    // setTimeout(()=>document.querySelector('.loader')?.remove(), 3000);
-  </script>
 </body>
+
 </html>
